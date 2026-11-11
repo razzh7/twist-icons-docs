@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState } from "react"
 import { filterCategories } from "@/lib/twist-icons"
-import { resolveVisibleIcons } from "@/lib/icon-search"
+import { preloadIconRoute, resolveVisibleIcons } from "@/lib/icon-search"
 import { useDebouncedCallback } from 'use-debounce'
-import { useSearchParams, usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import type { IconProps } from "@/types/icons"
 
 export function useIcons(id: string) {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const urlQuery = searchParams.get('s') ?? ''
-  const [query, setQuery] = useState(urlQuery)
+  const [query, setQuery] = useState('')
+  const [inputValue, setInputValue] = useState('')
   const [icons, setIcons] = useState<IconProps[]>([])
   const [total, setTotal] = useState(0)
   const [ready, setReady] = useState(false)
@@ -18,14 +17,16 @@ export function useIcons(id: string) {
   const categories = filterCategories(id)
   const currentPath = pathname.split('/').pop()
   const seenId = useRef<string | null>(null)
-  const urlQueryRef = useRef(urlQuery)
-  urlQueryRef.current = urlQuery
   const debouncedSetQuery = useDebouncedCallback((value: string) => {
     setQuery(value)
   }, 300)
 
+  if (typeof window !== 'undefined') {
+    preloadIconRoute(id)
+  }
+
   const handleSearch = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
+    const params = new URLSearchParams(window.location.search)
     if (value) {
       params.set('s', value)
     } else {
@@ -37,8 +38,10 @@ export function useIcons(id: string) {
   }
 
   useEffect(() => {
+    const urlQuery = new URLSearchParams(window.location.search).get('s') ?? ''
     debouncedSetQuery.cancel()
-    setQuery(urlQueryRef.current)
+    setQuery(urlQuery)
+    setInputValue(urlQuery)
   }, [id, debouncedSetQuery])
 
   useEffect(() => {
@@ -74,7 +77,7 @@ export function useIcons(id: string) {
     max,
     setMax,
     categories,
-    searchParams,
+    inputValue,
     handleSearch,
     currentPath
   }
