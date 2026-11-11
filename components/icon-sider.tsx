@@ -30,6 +30,7 @@ export function IconSider() {
                   query: s ? { s } : {}
                 }}
                 key={item.key}
+                prefetch={false}
               >
                 <div
                   className={

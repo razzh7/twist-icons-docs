@@ -17,7 +17,7 @@ interface IconPageProps {
 
 export default function IconPage({ params }: IconPageProps) {
   const [id] = params.slug
-  const { icons, max, setMax, searchParams, categories, handleSearch, currentPath } = useIcons(id)
+  const { icons, total, ready, max, setMax, searchParams, categories, handleSearch, currentPath } = useIcons(id)
   const { open, setOpen, openModal, prefixId, iconName, ActiveIcon } = useModal()
 
   return (
@@ -58,20 +58,24 @@ export default function IconPage({ params }: IconPageProps) {
           <div className="flex flex-wrap justify-center">
             {
               icons.length ? (
-                icons.slice(0, max).map(({ prefix, name, Icon }) => (
+                icons.map(({ prefix, name, Icon }) => (
                   <div
                     className={`${style['icon-item']} box-border flex justify-center items-center p-2 text-xl transition-all cursor-pointer`}
-                    key={name}
+                    key={`${prefix}-${name}`}
                     onClick={() => openModal({ prefix, name, Icon })}
                   >
                     <Icon />
                   </div>
                 ))
-              ) : <div className="text-lg">No matched Icons</div>
+              ) : ready ? (
+                <div className="text-lg">No matched Icons</div>
+              ) : (
+                <div className="text-lg">Loading icons...</div>
+              )
             }
           </div>
           {
-            max < icons.length && (
+            max < total && (
               <Fragment>
                 <Button
                   className="mx-2 my-4"
@@ -87,7 +91,7 @@ export default function IconPage({ params }: IconPageProps) {
                     <Button
                       className="mx-1 my-4"
                       variant="secondary"
-                      onClick={() => setMax(icons.length)}
+                      onClick={() => setMax(total)}
                     >
                       Load All
                     </Button>

@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 9210",
+    "generate-icons": "node scripts/generate-icon-assets.mjs",
+    "prebuild": "node scripts/generate-icon-assets.mjs",
     "build": "next build",
     "start": "next start -p 2010",
     "lint": "next lint"

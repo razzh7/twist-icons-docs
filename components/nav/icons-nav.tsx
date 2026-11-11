@@ -1,5 +1,5 @@
 import { ModeToggle } from "@/components/mode-toggle"
-import { TiLogoGithubFilled } from '@twistify/react-icons/ti'
+import { TiLogoGithubFilled } from '@/generated/chrome-icons'
 import { Button } from "@/components/ui/button"
 
 export function IconsNav() {

@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { TiModeDark, TiSunny } from '@twistify/react-icons/ti'
+import { TiModeDark, TiSunny } from '@/generated/chrome-icons'
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import {
