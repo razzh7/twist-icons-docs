@@ -1,4 +1,5 @@
 import { homePreviewSets } from "@/generated/home-previews"
+import { preloadIconRoute } from "@/lib/icon-search"
 import Link from "next/link"
 
 export function EntryCard() {
@@ -10,7 +11,9 @@ export function EntryCard() {
             className="flex flex-col gap-2 border rounded-md p-6 cursor-pointer hover:border-slate-50 transition-all"
             key={name}
             href={`/icons/${id}`}
-            prefetch={false}
+            onMouseEnter={() => preloadIconRoute(id)}
+            onFocus={() => preloadIconRoute(id)}
+            onPointerDown={() => preloadIconRoute(id)}
           >
             <div className="text-xl from-neutral-600">{name}</div>
             <div className="text-sm text-primary/60">{len} icons</div>

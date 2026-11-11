@@ -5,6 +5,15 @@ import { iconLoaders, type IconModule } from '@/generated/icon-loaders'
 const moduleCache = new Map<string, Promise<IconModule>>()
 let searchIndexPromise: Promise<Array<[string, string]>> | null = null
 
+export function preloadIconRoute(id: string) {
+  if (!id || id === 'all') {
+    void loadSearchIndex().catch(() => undefined)
+    void loadIconSet('ai').catch(() => undefined)
+    return
+  }
+  void loadIconSet(id).catch(() => undefined)
+}
+
 export function loadIconSet(id: string) {
   const cached = moduleCache.get(id)
   if (cached) return cached

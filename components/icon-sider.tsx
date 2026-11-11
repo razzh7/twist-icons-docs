@@ -4,6 +4,7 @@ import { Logo } from "./logo"
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { allCategories } from '@/lib/twist-icons'
 import { useSearchParams, usePathname } from 'next/navigation'
+import { preloadIconRoute } from '@/lib/icon-search'
 import clsx from 'clsx'
 import Link from 'next/link'
 
@@ -30,7 +31,9 @@ export function IconSider() {
                   query: s ? { s } : {}
                 }}
                 key={item.key}
-                prefetch={false}
+                onMouseEnter={() => preloadIconRoute(item.key)}
+                onFocus={() => preloadIconRoute(item.key)}
+                onPointerDown={() => preloadIconRoute(item.key)}
               >
                 <div
                   className={
