@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react"
-import { allIcons, getIcons, filterCategories } from "@/lib/twist-icons"
+import { useEffect, useRef, useState } from "react"
+import { filterCategories } from "@/lib/twist-icons"
+import { resolveVisibleIcons } from "@/lib/icon-search"
 import { useDebouncedCallback } from 'use-debounce'
 import { useSearchParams, usePathname, useRouter } from 'next/navigation'
 import type { IconProps } from "@/types/icons"
@@ -8,47 +9,67 @@ export function useIcons(id: string) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const params = useRef(searchParams.get('s') ?? '')
+  const urlQuery = searchParams.get('s') ?? ''
+  const [query, setQuery] = useState(urlQuery)
   const [icons, setIcons] = useState<IconProps[]>([])
+  const [total, setTotal] = useState(0)
+  const [ready, setReady] = useState(false)
   const [max, setMax] = useState(200)
   const categories = filterCategories(id)
   const currentPath = pathname.split('/').pop()
-
-  const specifiedIcons = getIcons(id)
-  const searchIcons = useDebouncedCallback((value: string) => {
-    const curIcons = currentPath === 'all' ? allIcons : specifiedIcons
-    const searchResult = curIcons.filter(
-      ({ name }: IconProps) => name.toLowerCase().includes(value.toLowerCase())
-    )
-    setIcons(searchResult)
+  const seenId = useRef<string | null>(null)
+  const urlQueryRef = useRef(urlQuery)
+  urlQueryRef.current = urlQuery
+  const debouncedSetQuery = useDebouncedCallback((value: string) => {
+    setQuery(value)
   }, 300)
 
-  const updateParams = (value: string) => {
-    const params = new URLSearchParams(searchParams)
+  const handleSearch = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
     if (value) {
       params.set('s', value)
     } else {
       params.delete('s')
     }
-    router.replace(`${pathname}?${params.toString()}`)
-    if (value === '') return setIcons(specifiedIcons)
-  }
-
-  const handleSearch = (value: string) => {
-    updateParams(value)
-    searchIcons(value)
+    const next = params.toString()
+    router.replace(next ? `${pathname}?${next}` : pathname)
+    debouncedSetQuery(value)
   }
 
   useEffect(() => {
-    if (params.current) {
-      searchIcons(params.current)
-      return
+    debouncedSetQuery.cancel()
+    setQuery(urlQueryRef.current)
+  }, [id, debouncedSetQuery])
+
+  useEffect(() => {
+    let cancelled = false
+    if (seenId.current !== id) {
+      seenId.current = id
+      setIcons([])
+      setReady(false)
     }
-    setIcons(getIcons(id))
-  }, [pathname, id, searchIcons])
+
+    resolveVisibleIcons(id, query, max).then((result) => {
+      if (cancelled) return
+      setIcons(result.icons)
+      setTotal(result.total)
+      setReady(true)
+    }).catch(() => {
+      if (cancelled) return
+      setIcons([])
+      setTotal(0)
+      setReady(true)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, query, max])
 
   return {
     icons,
+    total,
+    ready,
     setIcons,
     max,
     setMax,

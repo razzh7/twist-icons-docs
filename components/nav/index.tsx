@@ -27,7 +27,7 @@ export function Nav() {
           <Logo />
           {
             links.map(({ name, path }) => (
-              <Link href={path} key={name}>
+              <Link href={path} key={name} prefetch={path.startsWith('/icons') ? false : undefined}>
                 <span className='transition-colors hover:text-foreground text-foreground/60'>{name}</span>
               </Link>
             ))
